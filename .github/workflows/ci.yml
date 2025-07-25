@@ -1,7 +1,7 @@
 name: CI
 on: [push, pull_request]
 env:
-  dockerid: ${{ secrets.dockerid }}
+  dockerid: ${{ secrets.dockerid || 'openrct2' }}
   dockerpass: ${{ secrets.dockerpass }}
 jobs:
   build:
@@ -21,12 +21,12 @@ jobs:
       - name: Build docker image
         run: |
           ctxpath=${dockertag//-/\/}
-          docker build -t openrct2/openrct2-build:$dockertag $ctxpath
+          docker build -t $dockerid/openrct2-build:$dockertag $ctxpath
       - name: Publish docker image
         run: |
-          if [ "$dockerid" != "" ]; then
+          if [ "$dockerpass" != "" ]; then
               docker login -u "$dockerid" -p "$dockerpass"
-              docker push openrct2/openrct2-build:$dockertag
+              docker push $dockerid/openrct2-build:$dockertag
           else
               echo 'Image not pushed'
           fi
@@ -37,13 +37,13 @@ jobs:
     steps:
       - name: Tag docker images
         run: |
-          if [ "$dockerid" != "" ]; then
+          if [ "$dockerpass" != "" ]; then
               docker login -u "$dockerid" -p "$dockerpass"
-              docker pull openrct2/openrct2-build:20-noble
-              docker tag openrct2/openrct2-build:20-noble openrct2/openrct2-build:20
-              docker tag openrct2/openrct2-build:20-noble openrct2/openrct2-build:latest
-              docker push openrct2/openrct2-build:20
-              docker push openrct2/openrct2-build:latest
+              docker pull $dockerid/openrct2-build:20-noble
+              docker tag $dockerid/openrct2-build:20-noble $dockerid/openrct2-build:20
+              docker tag $dockerid/openrct2-build:20-noble $dockerid/openrct2-build:latest
+              docker push $dockerid/openrct2-build:20
+              docker push $dockerid/openrct2-build:latest
           else
               echo 'Images not tagged'
           fi
